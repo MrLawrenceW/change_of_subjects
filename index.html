@@ -8,7 +8,7 @@
     <script>
         MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-            svg: { fontCache: 'global' }
+            svg: { fontCache: 'global', linebreaks: { inline: true } }
         };
     </script>
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
@@ -216,7 +216,7 @@
         </div>
     </div>
 
-    <div id="game-screen" class="hidden w-full max-w-2xl flex flex-col gap-4">
+    <div id="game-screen" class="hidden w-full max-w-3xl flex flex-col gap-4">
         
         <div class="flex justify-between items-center bg-slate-800 rounded-full px-6 py-3 shadow-lg border border-slate-700">
             <div class="font-bold text-amber-400" id="level-indicator">Level 1</div>
@@ -236,7 +236,7 @@
             </button>
         </div>
 
-        <div class="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl text-center min-h-[350px] flex flex-col relative w-full overflow-hidden" id="main-game-area">
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl text-center min-h-[350px] flex flex-col relative w-full" id="main-game-area">
             
             <div class="w-full flex justify-between items-center mb-2 border-b border-slate-700/50 pb-3">
                 <div class="flex flex-col text-left">
@@ -257,7 +257,7 @@
                 </div>
             </div>
 
-            <div id="question-display" class="text-3xl sm:text-4xl text-white mb-6 overflow-x-auto py-6 flex items-center justify-center min-h-[120px]">
+            <div id="question-display" class="text-xl sm:text-2xl text-white mb-6 overflow-x-auto py-6 px-4 text-center min-h-[120px] max-w-full">
                 <!-- MathJax renders here -->
             </div>
             
@@ -548,7 +548,7 @@
                     const k = this.rand(2, 9);
                     const f = this.frac([[-(k - 1), l1]], [[1, l1], [-1, '']]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } ${l1}(${s}+${k}) = ${l1}+${s}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } ${l1}(${s}+${k}) = ${l1}+${s}.`;
                     law = 'expand_bracket';
                     vars = [s, l1];
                     opts = this.opts4(ansTex, [
@@ -560,7 +560,7 @@
                     const m = this.rand(2, 9), n = this.rand(2, 4);
                     const f = this.frac([[n - 1, t], [-m, '']], [[n, t]]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${m}+${t}}{1-${s}} = ${n}${t}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${m}+${t}}{1-${s}} = ${n}${t}.`;
                     law = 'cross_multiply';
                     opts = this.opts4(ansTex, [
                         `\\frac{(${n - 1})${t}-${m}}{${n}}`, `\\frac{(${n + 1})${t}-${m}}{${n}${t}}`,
@@ -571,7 +571,7 @@
                     const m = this.rand(2, 4), k = this.rand(3, 9), n = this.rand(1, 4);
                     const f = this.frac([[k - 1, t], [-k * n, '']], [[m, '']]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${m}${s}+${t}}{${k}} = ${t}-${n}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${m}${s}+${t}}{${k}} = ${t}-${n}.`;
                     law = 'cross_multiply';
                     opts = this.opts4(ansTex, [
                         `\\frac{(${k - 1})${t}-${k * n}}{${m + 1}}`, `\\frac{(${k - 1})${t}-${k * n + 1}}{${m}}`,
@@ -582,7 +582,7 @@
                     const c = this.rand(2, 6), d = this.rand(1, 2), r = this.rand(2, 4);
                     const f = this.frac([[d, s]], [[c, ''], [-r, s]]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${t} \\text{ the subject of the formula } \\frac{${c}}{${s}} - \\frac{${d}}{${t}} = ${r}`;
+                    qText = `\\text{Make } ${t} \\text{ the subject of the formula } \\frac{${c}}{${s}} - \\frac{${d}}{${t}} = ${r}.`;
                     law = 'collect_subject';
                     opts = this.opts4(ansTex, [
                         `\\frac{${d}${s}}{${c}+${r}${s}}`, `\\frac{${c}${s}}{${d}-${r}${s}}`,
@@ -595,7 +595,7 @@
                     while (r === n) r = this.rand(6, 9);
                     const f = this.frac([[m, t], [-q, '']], [[r - n, '']]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${m}${t}+${n}${s}-${q}}{${s}} = ${r}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${m}${t}+${n}${s}-${q}}{${s}} = ${r}.`;
                     law = 'cross_multiply';
                     opts = this.opts4(ansTex, [
                         `\\frac{${m}${t}-${q}}{${r + n}}`, `\\frac{${m}${t}+${q}}{${r - n}}`,
@@ -608,7 +608,7 @@
                     const k = this.rand(2, 4);
                     const f = this.frac([[1, l2 + l3]], [[1, l1], [-k, l3]]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } ${l1}${s} = (${k}${s}+${l2})${l3}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } ${l1}${s} = (${k}${s}+${l2})${l3}.`;
                     vars = [s, l1, l2, l3];
                     law = 'expand_bracket';
                     opts = this.opts4(ansTex, [
@@ -622,7 +622,7 @@
                     const m = this.rand(2, 6);
                     const f = this.frac([[m, u]], [[1, t], [1, '']]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } ${t} = \\frac{${m}${u}-${s}}{${s}}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } ${t} = \\frac{${m}${u}-${s}}{${s}}.`;
                     vars = [s, t, u];
                     law = 'cross_multiply';
                     opts = this.opts4(ansTex, [
@@ -638,7 +638,7 @@
                     while (l === k || l * m === k * n) { n = this.rand(1, 6); l = this.rand(2, 5); }
                     const f = this.frac([[l, t], [l * m - k * n, '']], [[k, '']]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${t}+${m}}{${k}} = \\frac{${s}+${n}}{${l}}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${t}+${m}}{${k}} = \\frac{${s}+${n}}{${l}}.`;
                     vars = [s, t];
                     law = 'cross_multiply';
                     opts = this.opts4(ansTex, [
@@ -652,7 +652,7 @@
                     while (r === c) r = this.rand(2, 8);
                     const f = this.frac([[-c * q, t], [n, '']], [[c - r, '']]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } ${c}(${s}+${q}${t}) = ${r}${s}+${n}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } ${c}(${s}+${q}${t}) = ${r}${s}+${n}.`;
                     law = 'expand_bracket';
                     opts = this.opts4(ansTex, [
                         `\\frac{${n}-${c * q}${t}}{${c + r}}`, `\\frac{${n}+${c * q}${t}}{${c - r}}`,
@@ -663,7 +663,7 @@
                     const m = this.rand(2, 9), n = this.rand(2, 4), r = this.rand(2, 6);
                     const f = this.frac([[m, ''], [-r, t]], [[n, '']]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${m}-${n}${s}}{${t}} = ${r}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${m}-${n}${s}}{${t}} = ${r}.`;
                     law = 'cross_multiply';
                     opts = this.opts4(ansTex, [
                         `\\frac{${m}+${r}${t}}{${n}}`, `\\frac{${m}-${r}${t}}{${n + 1}}`,
@@ -674,7 +674,7 @@
                     const c = this.rand(3, 8), n = this.rand(2, 7);
                     const f = this.frac([[1, `${t}^2`], [c * n, '']], [[c, ''], [-1, t]]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${c}}{${s}+${t}} = \\frac{${t}}{${s}-${n}}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${c}}{${s}+${t}} = \\frac{${t}}{${s}-${n}}.`;
                     law = 'cross_multiply';
                     opts = this.opts4(ansTex, [
                         `\\frac{${t}^2-${c * n}}{${c}-${t}}`, `\\frac{${t}^2+${c * n}}{${c}+${t}}`,
@@ -687,7 +687,7 @@
                     const k = this.rand(2, 4);
                     const f = this.frac([[1, l2]], [[k, l3], [-1, l1]]);
                     ansTex = f.tex; ansStr = f.str;
-                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${l1}${s}+${l2}}{${l3}} = ${k}${s}`;
+                    qText = `\\text{Make } ${s} \\text{ the subject of the formula } \\frac{${l1}${s}+${l2}}{${l3}} = ${k}${s}.`;
                     vars = [s, l1, l2, l3];
                     law = 'cross_multiply';
                     opts = this.opts4(ansTex, [
@@ -814,12 +814,14 @@
                         `\\frac{${a + b}}{(${a}-x)^2}`, `\\frac{${a - b + 1}}{(${a}-x)^2}`
                     ]);
                 } else if (type === 4) {
-                    // Q70: 1/(x-m)^2 - 1/((x-m)(x+n)) = (m+n)/((x-m)^2(x+n))
+                    // Q70: 1/(x-m)^2 - 1/((x-m)(x+n)) = (m+n)/((x-m)^2(x+n))   (n > m; no 0x/1x coefficient)
                     law = 'lcd';
-                    const m = this.rand(1, 2), n = this.rand(2, 5);
+                    const m = this.rand(1, 2);
+                    let n = this.rand(2, 5);
+                    while (n === m) n = this.rand(2, 5);
                     ansTex = `\\frac{${m + n}}{(x-${m})^2(x+${n})}`;
                     ansStr = `${m + n}/((x-${m})^2(x+${n}))`;
-                    qText = `\\text{Simplify } \\frac{1}{x^2-${2 * m}x+${m * m}} - \\frac{1}{x^2+${n - m}x-${m * n}}`;
+                    qText = `\\text{Simplify } \\frac{1}{x^2-${2 * m}x+${m * m}} - \\frac{1}{x^2+${this.c(n - m, 'x')}-${m * n}}`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${m + n}}{(x-${m})(x+${n})}`, `\\frac{1}{(x-${m})^2(x+${n})}`,
                         `\\frac{${n - m}}{(x-${m})^2(x+${n})}`, `\\frac{${m + n}}{(x-${m})^2(x-${n})}`
@@ -838,9 +840,11 @@
                         `\\frac{${2 * q}}{${q * q}+${p * p}x^2}`, `\\frac{${2 * q + 1}}{${q * q}-${p * p}x^2}`
                     ]);
                 } else if (type === 6) {
-                    // Q73: a/(px+q) - b/(px-q) = ((a-b)px-(a+b)q)/(p^2 x^2 - q^2)
+                    // Q73: a/(px+q) - b/(px-q) = ((a-b)px-(a+b)q)/(p^2 x^2 - q^2)   (a != b, no 0x)
                     law = 'lcd';
-                    const a = this.rand(3, 7), b = this.rand(1, 3);
+                    const a = this.rand(3, 7);
+                    let b = this.rand(1, 3);
+                    while (b === a) b = this.rand(1, 3);
                     let p = this.rand(3, 5), q = this.rand(3, 9);
                     while (this.gcd(p, q) !== 1) q = this.rand(3, 9);
                     const c1 = (a - b) * p, c0 = (a + b) * q;
@@ -871,9 +875,11 @@
                         `\\frac{${nt4}}{(x-${m})(x-${n})}`, `\\frac{${numTex}}{(x-${m})(x+${n})}`
                     ]);
                 } else if (type === 8) {
-                    // Q76: a/(q-px) - b/(q+px) = ((a-b)q+(a+b)px)/(q^2-p^2 x^2)
+                    // Q76: a/(q-px) - b/(q+px) = ((a-b)q+(a+b)px)/(q^2-p^2 x^2)   (a != b, no 0 constant)
                     law = 'lcd';
-                    const a = this.rand(2, 5), b = this.rand(1, 2);
+                    const a = this.rand(2, 5);
+                    let b = this.rand(1, 2);
+                    while (b === a) b = this.rand(1, 2);
                     let p = this.rand(3, 5), q = this.rand(4, 9);
                     while (q <= p || this.gcd(p, q) !== 1) q = this.rand(4, 9);
                     const c0 = (a - b) * q, c1 = (a + b) * p;
@@ -898,7 +904,7 @@
                     const numT = numBuild(c1, c0), numF = numBuild(-c1, c0), numG = numBuild(c1, -c0);
                     ansTex = `\\frac{${numT}}{(${p}x-${q})(${r}-${s}x)}`;
                     ansStr = `${numT}/((${p}x-${q})(${r}-${s}x))`;
-                    qText = `\\text{Simplify } \\frac{${a}}{${p}x-${q}} + \\frac{${b}}{${r}-${s}x}`;
+                    qText = `\\text{Simplify } \\frac{${a}}{${p}x-${q}} + \\frac{${b}}{${r}-${s}x}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${numF}}{(${p}x-${q})(${r}-${s}x)}`, `\\frac{${numG}}{(${p}x-${q})(${r}-${s}x)}`,
                         `\\frac{${numT}}{(${p}x+${q})(${r}-${s}x)}`, `\\frac{${numT}}{(${p}x-${q})(${r}+${s}x)}`
@@ -918,7 +924,7 @@
                     const numT = numBuild(c1, c0), numF = numBuild(-c1, c0), numG = numBuild(c1, -c0);
                     ansTex = `\\frac{${numT}}{(${p}x-${q})(${r}x-${s})}`;
                     ansStr = `${numT}/((${p}x-${q})(${r}x-${s}))`;
-                    qText = `\\text{Simplify } \\frac{${a}}{${p}x-${q}} - \\frac{${b}}{${r}x-${s}}`;
+                    qText = `\\text{Simplify } \\frac{${a}}{${p}x-${q}} - \\frac{${b}}{${r}x-${s}}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${numF}}{(${p}x-${q})(${r}x-${s})}`, `\\frac{${numG}}{(${p}x-${q})(${r}x-${s})}`,
                         `\\frac{${numT}}{(${p}x+${q})(${r}x-${s})}`, `\\frac{${numT}}{(${p}x-${q})(${r}x+${s})}`
@@ -934,7 +940,7 @@
                     const numT = numBuild(c1, c0), numF = numBuild(c1, -c0), numG = numBuild(-c1, c0);
                     ansTex = `\\frac{${numT}}{(x-${q})(${p}x+${r})}`;
                     ansStr = `${numT}/((x-${q})(${p}x+${r}))`;
-                    qText = `\\text{Simplify } \\frac{${a}}{x-${q}} + \\frac{${b}}{${p}x+${r}}`;
+                    qText = `\\text{Simplify } \\frac{${a}}{x-${q}} + \\frac{${b}}{${p}x+${r}}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${numF}}{(x-${q})(${p}x+${r})}`, `\\frac{${numG}}{(x-${q})(${p}x+${r})}`,
                         `\\frac{${numT}}{(x+${q})(${p}x+${r})}`, `\\frac{${numT}}{(x-${q})(${p}x-${r})}`
@@ -953,7 +959,7 @@
                     const numT = numBuild(c1, c0), numF = numBuild(-c1, c0), numG = numBuild(c1, -c0);
                     ansTex = `\\frac{${numT}}{(${p}x-${q})(${r}x+${s})}`;
                     ansStr = `${numT}/((${p}x-${q})(${r}x+${s}))`;
-                    qText = `\\text{Simplify } \\frac{${a}}{${p}x-${q}} - \\frac{${b}}{${r}x+${s}}`;
+                    qText = `\\text{Simplify } \\frac{${a}}{${p}x-${q}} - \\frac{${b}}{${r}x+${s}}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${numF}}{(${p}x-${q})(${r}x+${s})}`, `\\frac{${numG}}{(${p}x-${q})(${r}x+${s})}`,
                         `\\frac{${numT}}{(${p}x+${q})(${r}x+${s})}`, `\\frac{${numT}}{(${p}x-${q})(${r}x-${s})}`
@@ -1005,7 +1011,7 @@
                 return [
                     this.part(`\\text{It is given that } x^2+p(x+${b})+q \\equiv (x-${a})(x+${b}). \\text{ Find } p`,
                         `${p}`, `${p}`, this.numOpts(p, [a - b, b + a, p + 1]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } q`, `${q}`, `${q}`, this.numOpts(q, [-q, -a * b, q + 1]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } x^2+p(x+${b})+q \\equiv (x-${a})(x+${b}). \\text{ Find } q`, `${q}`, `${q}`, this.numOpts(q, [-q, -a * b, q + 1]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1017,7 +1023,7 @@
                 return [
                     this.part(`\\text{It is given that } m(x-${c})^2+n(x+${d})^2 \\equiv x^2${this.st(-P, 'x')}${this.st(Q, '')}. \\text{ Find } m`,
                         `${m}`, `${m}`, this.numOpts(m, [n, m + 1, m - 1]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } n`, `${n}`, `${n}`, this.numOpts(n, [m, n + 1, n - 1]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } m(x-${c})^2+n(x+${d})^2 \\equiv x^2${this.st(-P, 'x')}${this.st(Q, '')}. \\text{ Find } n`, `${n}`, `${n}`, this.numOpts(n, [m, n + 1, n - 1]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1029,7 +1035,7 @@
                 return [
                     this.part(`\\text{It is given that } x^2+p \\equiv (x+${a})(x+q)+${k}. \\text{ Find } q`,
                         `${q}`, `${q}`, this.numOpts(q, [a, q + 1, q - 1]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } p`, `${p}`, `${p}`, this.numOpts(p, [p + 1, p - 1, k]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } x^2+p \\equiv (x+${a})(x+q)+${k}. \\text{ Find } p`, `${p}`, `${p}`, this.numOpts(p, [p + 1, p - 1, k]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1042,7 +1048,7 @@
                 return [
                     this.part(`\\text{It is given that } x(x+${k}a)+a \\equiv x^2+${n}(bx+c). \\text{ Find } a:b`,
                         ratio, ratio, this.numOpts(ratio, [`${k}:${n}`, `1:${k}`, `${n}:${n + k}`]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } a:b:c`, ratio2, ratio2, this.numOpts(ratio2, [`${n}:1:${k}`, `1:${n}:${k}`, `${k}:${n}:1`]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } x(x+${k}a)+a \\equiv x^2+${n}(bx+c). \\text{ Find } a:b:c`, ratio2, ratio2, this.numOpts(ratio2, [`${n}:1:${k}`, `1:${n}:${k}`, `${k}:${n}:1`]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1054,7 +1060,7 @@
                 return [
                     this.part(`\\text{It is given that } px(x-1)+x^2 \\equiv qx(x-${k})+${r}x. \\text{ Find } p`,
                         `${p}`, `${p}`, this.numOpts(p, [p + 1, p - 1, k]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } q`, `${q}`, `${q}`, this.numOpts(q, [p, q + 1, q - 1]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } px(x-1)+x^2 \\equiv qx(x-${k})+${r}x. \\text{ Find } q`, `${q}`, `${q}`, this.numOpts(q, [p, q + 1, q - 1]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1067,7 +1073,7 @@
                 return [
                     this.part(`\\text{It is given that } x^2+mx+n \\equiv (x+${a})(x-m)+${k}. \\text{ Find } m`,
                         `${m}`, `${m}`, this.numOpts(m, [m + 1, m - 1, a]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } n`, `${n}`, `${n}`, this.numOpts(n, [n + 1, n - 1, -n]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } x^2+mx+n \\equiv (x+${a})(x-m)+${k}. \\text{ Find } n`, `${n}`, `${n}`, this.numOpts(n, [n + 1, n - 1, -n]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1079,7 +1085,7 @@
                 return [
                     this.part(`\\text{It is given that } ${a}x^2+m(x+1)+${b} \\equiv mx(x+${c})+n(x-${d}). \\text{ Find } m`,
                         `${m}`, `${m}`, this.numOpts(m, [m + 1, m - 1, a + 1]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } n`, `${n}`, `${n}`, this.numOpts(n, [n + 1, n - 1, -n]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } ${a}x^2+m(x+1)+${b} \\equiv mx(x+${c})+n(x-${d}). \\text{ Find } n`, `${n}`, `${n}`, this.numOpts(n, [n + 1, n - 1, -n]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1091,19 +1097,21 @@
                 return [
                     this.part(`\\text{It is given that } (x-${a})(x+\\alpha)-${k} \\equiv (x-${b})^2+\\beta. \\text{ Find } \\alpha`,
                         `${al}`, `${al}`, this.numOpts(al, [al + 1, al - 1, a - b]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } \\beta`, `${be}`, `${be}`, this.numOpts(be, [be + 1, be - 1, -be]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } (x-${a})(x+\\alpha)-${k} \\equiv (x-${b})^2+\\beta. \\text{ Find } \\beta`, `${be}`, `${be}`, this.numOpts(be, [be + 1, be - 1, -be]), ['x'], 'use_a', src)
                 ];
             },
 
             // T9: Q516 — (x+h)(x+a) ≡ (x+b)^2+k: (a) find h, (b) hence find k
             setT9: function() {
                 const src = 'P2 Q516 · HKDSE 20-P2-Q7';
-                const a = this.rand(4, 8), b = this.rand(3, 6);
+                const a = this.rand(4, 8);
+                let b = this.rand(3, 6);
+                while (b === a || 2 * b === a) b = this.rand(3, 6);
                 const h = 2 * b - a, k = a * h - b * b;
                 return [
                     this.part(`\\text{It is given that } (x+h)(x+${a}) \\equiv (x+${b})^2+k. \\text{ Find } h`,
                         `${h}`, `${h}`, this.numOpts(h, [h + 1, h - 1, 2 * b]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } k`, `${k}`, `${k}`, this.numOpts(k, [k + 1, k - 1, -k]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } (x+h)(x+${a}) \\equiv (x+${b})^2+k. \\text{ Find } k`, `${k}`, `${k}`, this.numOpts(k, [k + 1, k - 1, -k]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1117,7 +1125,7 @@
                 return [
                     this.part(`\\text{It is given that } a(x+${m})+b(${p}x+1) \\equiv c(x+${n}). \\text{ Find } a:b`,
                         ratio, ratio, this.numOpts(ratio, [`${B}:${A}`, `${A + B}:${B}`, `${A}:${A + B}`]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence express } c \\text{ in terms of } a \\text{ and } b`, cTex, cTex,
+                    this.part(`\\text{It is given that } a(x+${m})+b(${p}x+1) \\equiv c(x+${n}). \\text{ Express } c \\text{ in terms of } a \\text{ and } b`, cTex, cTex,
                         [`a-${p}b`, `${p}a+b`, `a+${p}a+b`], ['a', 'b'], 'use_a', src)
                 ];
             },
@@ -1131,7 +1139,7 @@
                 return [
                     this.part(`\\text{It is given that } (x+${a})^2+mx \\equiv (x-n)(x+1)+${k}n. \\text{ Find } n`,
                         `${n}`, `${n}`, this.numOpts(n, [n + 2, n - 2, a * a]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } m`, `${m}`, `${m}`, this.numOpts(m, [m + 2, m - 2, 2 * a + m]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } (x+${a})^2+mx \\equiv (x-n)(x+1)+${k}n. \\text{ Find } m`, `${m}`, `${m}`, this.numOpts(m, [m + 2, m - 2, 2 * a + m]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1143,7 +1151,7 @@
                 return [
                     this.part(`\\text{It is given that } (x+${a})(x+c)+${k} \\equiv x(x+d)+${m}c(x+1). \\text{ Find } c`,
                         `${c}`, `${c}`, this.numOpts(c, [c + 1, c - 1, m - c]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } d`, `${d}`, `${d}`, this.numOpts(d, [d + 1, d - 1, -d]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } (x+${a})(x+c)+${k} \\equiv x(x+d)+${m}c(x+1). \\text{ Find } d`, `${d}`, `${d}`, this.numOpts(d, [d + 1, d - 1, -d]), ['x'], 'use_a', src)
                 ];
             },
 
@@ -1156,9 +1164,9 @@
                 while (s * t === p) t = this.rand(2, 5);
                 const r = s * q * t - p * q;
                 return [
-                    this.part(`\\text{It is given that } (x+${p})(x+q)${this.st(r, '')} \\equiv x^2+${s}q(x+${t}). \\text{ Find } q`,
+                    this.part(`\\text{It is given that } (x+${p})(x+q)+r \\equiv x^2+${s}q(x+${t}). \\text{ Find } q`,
                         `${q}`, `${q}`, this.numOpts(q, [q + 1, q - 1, q + 2]), ['x'], 'compare_coef', src),
-                    this.part(`\\text{Hence find } r`, `${r}`, `${r}`, this.numOpts(r, [r + 1, r - 1, p * q]), ['x'], 'use_a', src)
+                    this.part(`\\text{It is given that } (x+${p})(x+q)+r \\equiv x^2+${s}q(x+${t}). \\text{ Find } r`, `${r}`, `${r}`, this.numOpts(r, [r + 1, r - 1, p * q]), ['x'], 'use_a', src)
                 ];
             }
         };
@@ -1607,7 +1615,7 @@
                 <span id="l3-status-${pi}" class="${part.done ? 'text-green-400' : 'text-slate-400'} text-sm font-semibold">${part.done ? '✓ Correct' : ''}</span>
             </div>`;
             inner += `<div class="text-[11px] text-sky-400 font-semibold mb-1 text-left">${part.src || ''}</div>`;
-            inner += `<div id="l3-q-${pi}" class="text-xl sm:text-2xl text-white mb-3 text-center overflow-x-auto min-h-[40px] flex items-center justify-center">$ ${part.displayTex} $</div>`;
+            inner += `<div id="l3-q-${pi}" class="text-xl sm:text-2xl text-white mb-3 text-center overflow-x-auto min-h-[40px]">$ ${part.displayTex} $</div>`;
             if (part.done) {
                 inner += `<div class="text-center text-green-400 text-sm py-2 font-semibold">Answer: $ ${part.mcAnswerStr} $</div>`;
             } else if (part.mode === 'mc') {
