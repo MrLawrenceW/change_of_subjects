@@ -12,8 +12,22 @@
         };
     </script>
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
+        /* Paper typography: question text in Times New Roman, unknowns italic */
+        #question-display, .qtext { font-family: 'Times New Roman', Times, serif; }
+        .mathvar { font-style: italic; }
+
+        /* Root cause fix: Tailwind preflight sets svg { display: block }, which puts
+           each inline MathJax token on its own line in the H.C.F./L.C.M. prose questions.
+           Keep MathJax SVG inline (its own vertical-align then wins). Never set
+           vertical-align: middle !important on mjx-container or its svg. */
+        #question-display mjx-container,
+        #l3-area mjx-container { margin: 0 0.25em !important; font-size: 1em !important; }
+        #question-display mjx-container svg,
+        #l3-area mjx-container svg { display: inline-block !important; }
+
         .glass-panel {
             background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(12px);
@@ -74,6 +88,51 @@
             background-color: rgba(245, 158, 11, 0.2) !important;
             color: #fde68a !important;
         }
+
+        /* ==== COLORFUL THEME + ANSWER ANIMATIONS ==== */
+        body {
+            background-image:
+                radial-gradient(ellipse 80% 50% at 15% -10%, rgba(99, 102, 241, 0.30), transparent 60%),
+                radial-gradient(ellipse 60% 45% at 85% -5%, rgba(217, 70, 239, 0.22), transparent 60%),
+                radial-gradient(ellipse 75% 50% at 50% 110%, rgba(34, 211, 238, 0.20), transparent 60%);
+            background-attachment: fixed;
+        }
+        #login-screen h1 {
+            background: linear-gradient(90deg, #fbbf24, #f472b6, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        #dashboard-screen .glass-panel:hover { box-shadow: 0 0 26px rgba(139, 92, 246, 0.25); }
+        @keyframes flashGreen {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+            50% { box-shadow: 0 0 42px 10px rgba(34, 197, 94, 0.55); }
+        }
+        @keyframes flashRed {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            30%, 60% { box-shadow: 0 0 48px 12px rgba(239, 68, 68, 0.6); }
+        }
+        .correct-flash { animation: flashGreen 0.7s ease-in-out; }
+        .wrong-flash { animation: flashRed 0.6s ease-in-out; }
+        @keyframes scoreBounce {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.45); }
+            100% { transform: scale(1); }
+        }
+        .score-bounce { animation: scoreBounce 0.5s ease; }
+        @keyframes heartBreakAnim {
+            0% { transform: scale(1); opacity: 1; }
+            40% { transform: scale(1.6); }
+            100% { transform: scale(0.4); opacity: 0.35; }
+        }
+        .heart-broken { display: inline-block; animation: heartBreakAnim 0.55s ease forwards; }
+        @keyframes badgeBounce {
+            0% { transform: scale(0.7); }
+            55% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+        .badge-bounce { animation: badgeBounce 0.6s ease; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4 selection:bg-amber-500 selection:text-white">
@@ -257,7 +316,7 @@
                 </div>
             </div>
 
-            <div id="question-display" class="text-xl sm:text-2xl text-white mb-6 overflow-x-auto py-6 px-4 text-center min-h-[120px] max-w-full">
+            <div id="question-display" class="text-3xl sm:text-4xl text-white mb-6 overflow-x-auto py-6 px-4 text-center min-h-[120px] max-w-full">
                 <!-- MathJax renders here -->
             </div>
             
@@ -394,6 +453,23 @@
         // Deployed Google Apps Script Web App URL
         const GOOGLE_SCRIPT_URL =
             'https://script.google.com/macros/s/AKfycbw_YkEcuZBVHRAchsmhCJo9P357DkXOLvJKCRLA36F_AGvMU4GE-ZNsA1jkAm5dGJCG/exec';
+
+        const APP_VERSION = '1';
+        (function watchAppVersion() {
+            const file = (location.pathname.split('/').pop() || '').split('?')[0];
+            const check = () => {
+                fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data[file] && data[file] !== APP_VERSION) location.reload();
+                    })
+                    .catch(() => {});
+            };
+            setInterval(check, 60000);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') check();
+            });
+        })();
 
         let studentProfile = null;
         let badgeRecords = { level1: false, level2: false, level3: false };
@@ -710,7 +786,7 @@
             // ================= LEVEL 2: MORE ABOUT POLYNOMIALS =================
             generateL2: function(typeIdx) {
                 const type = typeIdx % 13;
-                let qText = "", ansStr = "", ansTex = "", opts = [], law = 'hcf_lcm';
+                let qText = "", qHtml = null, ansStr = "", ansTex = "", opts = [], law = 'hcf_lcm';
                 let vars = ['x'], instruction = "Simplify the expression:";
                 const SRCS = [
                     'P2 Q69 · HKDSE 14-P2-Q31 (also Q78 · 24-P2-Q31)',
@@ -748,13 +824,15 @@
                     const m2 = this.mono(c2, [[x, a + 1], [y, b], [z, c + 1]]);
                     const m3 = this.mono(c3, [[x, a + 1], [y, b + 1], [z, c]]);
                     ansTex = ansStr = this.mono(1, [[x, a], [y, b], [z, c]]);
+                    ansTex += '.';
                     instruction = "Find the H.C.F. of the three expressions:";
                     qText = `\\text{The H.C.F. of } ${m1}, ${m2} \\text{ and } ${m3} \\text{ is}`;
+                    qHtml = `The H.C.F. of $ ${m1} $, $ ${m2} $ and $ ${m3} $ is`;
                     opts = this.opts4(ansTex, [
-                        this.mono(1, [[x, a + 1], [y, b], [z, c]]),
-                        this.mono(1, [[x, a], [y, b + 1], [z, c]]),
-                        this.mono(2, [[x, a], [y, b], [z, c]]),
-                        this.mono(1, [[x, a], [y, b], [z, c + 1]])
+                        this.mono(1, [[x, a + 1], [y, b], [z, c]]) + '.',
+                        this.mono(1, [[x, a], [y, b + 1], [z, c]]) + '.',
+                        this.mono(2, [[x, a], [y, b], [z, c]]) + '.',
+                        this.mono(1, [[x, a], [y, b], [z, c + 1]]) + '.'
                     ]);
                 } else if (type === 1) {
                     // Q71: L.C.M. of three monomials (also Q77)
@@ -772,9 +850,10 @@
                         m2 = this.mono(c2, [[x, A - 1], [y, B]]);
                         m3 = this.mono(c3, [[x, A - 1], [y, B - 1]]);
                         ansTex = ansStr = this.mono(Lc, [[x, A], [y, B]]);
+                        ansTex += '.';
                         opts = this.opts4(ansTex, [
-                            this.mono(Lc, [[x, A + 1], [y, B]]), this.mono(Lc, [[x, A], [y, B - 1]]),
-                            this.mono(c1, [[x, A], [y, B]]), this.mono(Lc, [[x, A], [y, B + 1]])
+                            this.mono(Lc, [[x, A + 1], [y, B]]) + '.', this.mono(Lc, [[x, A], [y, B - 1]]) + '.',
+                            this.mono(c1, [[x, A], [y, B]]) + '.', this.mono(Lc, [[x, A], [y, B + 1]]) + '.'
                         ]);
                     } else {
                         const [x, y, z] = L;
@@ -782,13 +861,15 @@
                         m2 = this.mono(c2, [[x, A - 1], [y, B], [z, C - 1]]);
                         m3 = this.mono(c3, [[x, A - 1], [y, B - 1], [z, C]]);
                         ansTex = ansStr = this.mono(Lc, [[x, A], [y, B], [z, C]]);
+                        ansTex += '.';
                         opts = this.opts4(ansTex, [
-                            this.mono(Lc, [[x, A + 1], [y, B], [z, C]]), this.mono(Lc, [[x, A], [y, B], [z, C - 1]]),
-                            this.mono(c1, [[x, A], [y, B], [z, C]]), this.mono(Lc, [[x, A], [y, B], [z, C + 1]])
+                            this.mono(Lc, [[x, A + 1], [y, B], [z, C]]) + '.', this.mono(Lc, [[x, A], [y, B], [z, C - 1]]) + '.',
+                            this.mono(c1, [[x, A], [y, B], [z, C]]) + '.', this.mono(Lc, [[x, A], [y, B], [z, C + 1]]) + '.'
                         ]);
                     }
                     instruction = "Find the L.C.M. of the three expressions:";
                     qText = `\\text{The L.C.M. of } ${m1}, ${m2} \\text{ and } ${m3} \\text{ is}`;
+                    qHtml = `The L.C.M. of $ ${m1} $, $ ${m2} $ and $ ${m3} $ is`;
                 } else if (type === 2) {
                     // Q68: H.C.F. and L.C.M. given, find the third expression (also Q75)
                     const k = this.rand(3, 5);
@@ -796,11 +877,13 @@
                     const [x, y, z] = L;
                     vars = L;
                     ansTex = ansStr = this.mono(3, [[x, 1], [y, k]]);
+                    ansTex += '.';
                     instruction = "Find the third expression:";
                     qText = `\\text{The H.C.F. and the L.C.M. of three expressions are } ${this.mono(1, [[x, 1], [y, 2]])} \\text{ and } ${this.mono(12, [[x, 2], [y, k], [z, 2]])} \\text{ respectively. If the first expression and the second expression are } ${this.mono(2, [[x, 2], [y, 2], [z, 1]])} \\text{ and } ${this.mono(4, [[x, 2], [y, 2], [z, 2]])} \\text{ respectively, then the third expression is}`;
+                    qHtml = `The H.C.F. and the L.C.M. of three expressions are $ ${this.mono(1, [[x, 1], [y, 2]])} $ and $ ${this.mono(12, [[x, 2], [y, k], [z, 2]])} $ respectively. If the first expression and the second expression are $ ${this.mono(2, [[x, 2], [y, 2], [z, 1]])} $ and $ ${this.mono(4, [[x, 2], [y, 2], [z, 2]])} $ respectively, then the third expression is`;
                     opts = this.opts4(ansTex, [
-                        this.mono(1, [[x, 1], [y, k]]), this.mono(3, [[x, 1], [y, k - 1]]),
-                        this.mono(3, [[x, 2], [y, k]]), this.mono(3, [[x, 1], [y, k], [z, 1]])
+                        this.mono(1, [[x, 1], [y, k]]) + '.', this.mono(3, [[x, 1], [y, k - 1]]) + '.',
+                        this.mono(3, [[x, 2], [y, k]]) + '.', this.mono(3, [[x, 1], [y, k], [z, 1]]) + '.'
                     ]);
                 } else if (type === 3) {
                     // Q67: 1/(a-x) + (x-b)/(x-a)^2 = (a-b)/(a-x)^2
@@ -808,7 +891,7 @@
                     const a = this.rand(2, 5), b = this.rand(1, a - 1);
                     ansTex = `\\frac{${a - b}}{(${a}-x)^2}`;
                     ansStr = `${a - b}/((${a}-x)^2)`;
-                    qText = `\\text{Simplify } \\frac{1}{${a}-x} + \\frac{x-${b}}{(x-${a})^2}`;
+                    qText = `\\text{Simplify } \\frac{1}{${a}-x} + \\frac{x-${b}}{(x-${a})^2}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{1}{(${a}-x)^2}`, `\\frac{${a - b}}{${a}-x}`,
                         `\\frac{${a + b}}{(${a}-x)^2}`, `\\frac{${a - b + 1}}{(${a}-x)^2}`
@@ -821,7 +904,7 @@
                     while (n === m) n = this.rand(2, 5);
                     ansTex = `\\frac{${m + n}}{(x-${m})^2(x+${n})}`;
                     ansStr = `${m + n}/((x-${m})^2(x+${n}))`;
-                    qText = `\\text{Simplify } \\frac{1}{x^2-${2 * m}x+${m * m}} - \\frac{1}{x^2+${this.c(n - m, 'x')}-${m * n}}`;
+                    qText = `\\text{Simplify } \\frac{1}{x^2-${2 * m}x+${m * m}} - \\frac{1}{x^2+${this.c(n - m, 'x')}-${m * n}}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${m + n}}{(x-${m})(x+${n})}`, `\\frac{1}{(x-${m})^2(x+${n})}`,
                         `\\frac{${n - m}}{(x-${m})^2(x+${n})}`, `\\frac{${m + n}}{(x-${m})^2(x-${n})}`
@@ -834,7 +917,7 @@
                     while (this.gcd(p, q) !== 1) q = this.rand(3, 9);
                     ansTex = `\\frac{${2 * q}}{${q * q}-${p * p}x^2}`;
                     ansStr = `${2 * q}/(${q * q}-${p * p}x^2)`;
-                    qText = `\\text{Simplify } \\frac{1}{${p}x+${q}} - \\frac{1}{${p}x-${q}}`;
+                    qText = `\\text{Simplify } \\frac{1}{${p}x+${q}} - \\frac{1}{${p}x-${q}}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${2 * q}}{${p * p}x^2-${q * q}}`, `\\frac{${2 * p}}{${q * q}-${p * p}x^2}`,
                         `\\frac{${2 * q}}{${q * q}+${p * p}x^2}`, `\\frac{${2 * q + 1}}{${q * q}-${p * p}x^2}`
@@ -850,7 +933,7 @@
                     const c1 = (a - b) * p, c0 = (a + b) * q;
                     ansTex = `\\frac{${c1}x-${c0}}{${p * p}x^2-${q * q}}`;
                     ansStr = `${c1}x-${c0}/(${p * p}x^2-${q * q})`;
-                    qText = `\\text{Simplify } \\frac{${a}}{${p}x+${q}} - \\frac{${b}}{${p}x-${q}}`;
+                    qText = `\\text{Simplify } \\frac{${a}}{${p}x+${q}} - \\frac{${b}}{${p}x-${q}}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${c1}x+${c0}}{${p * p}x^2-${q * q}}`, `\\frac{${-c1}x-${c0}}{${p * p}x^2-${q * q}}`,
                         `\\frac{${c1}x-${c0}}{${p * p}x^2+${q * q}}`, `\\frac{${a + b}x}{${p * p}x^2-${q * q}}`
@@ -866,7 +949,7 @@
                     const numTex = tt > 0 ? `-x-${tt}` : `-x+${-tt}`;
                     ansTex = `\\frac{${numTex}}{(x-${m})(x-${n})}`;
                     ansStr = `${numTex}/((x-${m})(x-${n}))`;
-                    qText = `\\text{Simplify } \\frac{${a}}{x-${m}} - \\frac{${b}}{x-${n}}`;
+                    qText = `\\text{Simplify } \\frac{${a}}{x-${m}} - \\frac{${b}}{x-${n}}.`;
                     const nt2 = tt > 0 ? `x+${tt}` : `x-${-tt}`;
                     const nt3 = tt > 0 ? `-x+${tt}` : `-x-${-tt}`;
                     const nt4 = tt > 0 ? `x-${tt}` : `x+${-tt}`;
@@ -885,7 +968,7 @@
                     const c0 = (a - b) * q, c1 = (a + b) * p;
                     ansTex = `\\frac{${c0}+${c1}x}{${q * q}-${p * p}x^2}`;
                     ansStr = `${c0}+${c1}x/(${q * q}-${p * p}x^2)`;
-                    qText = `\\text{Simplify } \\frac{${a}}{${q}-${p}x} - \\frac{${b}}{${q}+${p}x}`;
+                    qText = `\\text{Simplify } \\frac{${a}}{${q}-${p}x} - \\frac{${b}}{${q}+${p}x}.`;
                     opts = this.opts4(ansTex, [
                         `\\frac{${c0}-${c1}x}{${q * q}-${p * p}x^2}`, `\\frac{${c0}+${c1}x}{${q * q}+${p * p}x^2}`,
                         `\\frac{${c1}x-${c0}}{${q * q}-${p * p}x^2}`, `\\frac{${c0 + 1}+${c1}x}{${q * q}-${p * p}x^2}`
@@ -970,7 +1053,7 @@
                     instruction: instruction,
                     paper: (type >= 9) ? 'Paper 1' : 'Paper 2',
                     src: SRCS[type],
-                    text: `$ ${qText} $`, answerStr: ansStr, mcAnswerStr: ansTex,
+                    text: `$ ${qText} $`, qHtml: qHtml || undefined, answerStr: ansStr, mcAnswerStr: ansTex,
                     variables: vars, options: opts,
                     firstStepLaw: law
                 };
@@ -997,7 +1080,7 @@
                 }
                 return {
                     instruction: "Multi-part question — answer the parts in order:",
-                    displayTex: displayTex, answerStr: answerStr, mcAnswerStr: ansTex,
+                    displayTex: /[.?!]$/.test(displayTex) ? displayTex : displayTex + '.', answerStr: answerStr, mcAnswerStr: ansTex,
                     variables: vars, firstStepLaw: law, src: src,
                     options: this.shuffle(list.map(o => `$ ${o} $`))
                 };
@@ -1248,6 +1331,61 @@
         }
 
 
+        // --- COLORFUL ANSWER ANIMATIONS (confetti / flash / bounce) ---
+        function celebrate(big) {
+            if (typeof confetti === 'undefined') return;
+            confetti({
+                particleCount: big ? 170 : 70,
+                spread: big ? 100 : 60,
+                startVelocity: big ? 40 : 25,
+                origin: { y: 0.6 },
+                colors: ['#fbbf24', '#f472b6', '#818cf8', '#34d399', '#22d3ee', '#f87171']
+            });
+        }
+        function animateCorrect() {
+            celebrate(false);
+            const area = document.getElementById('main-game-area');
+            if (area) {
+                area.classList.remove('correct-flash', 'wrong-flash');
+                void area.offsetWidth;
+                area.classList.add('correct-flash');
+            }
+            const sc = document.getElementById('live-score');
+            if (sc) {
+                sc.classList.remove('score-bounce');
+                void sc.offsetWidth;
+                sc.classList.add('score-bounce');
+            }
+        }
+        function animateWrong() {
+            const area = document.getElementById('main-game-area');
+            if (area) {
+                area.classList.remove('correct-flash', 'wrong-flash');
+                void area.offsetWidth;
+                area.classList.add('wrong-flash');
+            }
+        }
+        function heartBreak() {
+            const c = document.getElementById('lives-container');
+            if (!c) return;
+            const spans = c.querySelectorAll('span');
+            const dead = spans[lives];
+            if (dead) {
+                dead.textContent = '💔';
+                dead.classList.remove('opacity-30', 'grayscale');
+                dead.classList.add('heart-broken');
+            }
+        }
+        function celebrateBig() {
+            celebrate(true);
+            const badge = document.getElementById('badge-card-' + currentLevel);
+            if (badge) {
+                badge.classList.remove('badge-bounce');
+                void badge.offsetWidth;
+                badge.classList.add('badge-bounce');
+            }
+        }
+
         // --- CORE GAME LOGIC ---
 
         function login() {
@@ -1463,7 +1601,16 @@
             document.getElementById('question-display').classList.remove('hidden');
             
             const displayEl = document.getElementById('question-display');
-            displayEl.innerHTML = q.text;
+            if (q.qHtml) {
+                // Word-problem questions (H.C.F./L.C.M./find-the-third): left-aligned wrapped prose,
+                // no horizontal slider — mirrors the family prose layout.
+                displayEl.className = 'text-lg sm:text-xl text-white mb-6 py-6 px-4 text-left leading-relaxed min-h-[100px] max-w-full';
+                displayEl.innerHTML = q.qHtml;
+            } else {
+                // Formula questions (Make ... / Simplify ...): large centred math.
+                displayEl.className = 'text-3xl sm:text-4xl text-white mb-6 py-6 px-4 text-center min-h-[120px] max-w-full';
+                displayEl.innerHTML = q.text;
+            }
             
             document.getElementById('question-instruction').textContent = q.instruction;
             document.getElementById('paper-hint').textContent = q.src || 'DSE Style Question';
@@ -1615,7 +1762,7 @@
                 <span id="l3-status-${pi}" class="${part.done ? 'text-green-400' : 'text-slate-400'} text-sm font-semibold">${part.done ? '✓ Correct' : ''}</span>
             </div>`;
             inner += `<div class="text-[11px] text-sky-400 font-semibold mb-1 text-left">${part.src || ''}</div>`;
-            inner += `<div id="l3-q-${pi}" class="text-xl sm:text-2xl text-white mb-3 text-center overflow-x-auto min-h-[40px]">$ ${part.displayTex} $</div>`;
+            inner += `<div id="l3-q-${pi}" class="text-2xl sm:text-3xl text-white mb-3 text-center overflow-x-auto min-h-[40px]">$ ${part.displayTex} $</div>`;
             if (part.done) {
                 inner += `<div class="text-center text-green-400 text-sm py-2 font-semibold">Answer: $ ${part.mcAnswerStr} $</div>`;
             } else if (part.mode === 'mc') {
@@ -1657,7 +1804,8 @@
                 showToast(`Part ${currentSets[currentSetIndex][pi].partLabel} correct! Awesome job.`, "success");
                 
                 const set = currentSets[currentSetIndex];
-                set[pi].done = true;
+                                animateCorrect();
+                                set[pi].done = true;
                 rebuildL3Block(pi);
                 
                 if (set.every(p => p.done)) {
@@ -1671,7 +1819,8 @@
                     }, 700);
                 }
             } else {
-                showWrongReflectionModal();
+                                animateWrong();
+                                showWrongReflectionModal();
             }
         }
 
@@ -1734,7 +1883,8 @@
             if (isCorrect) {
                 // Track correct attempts
                 levelStats[`level${currentLevel}`].correct++;
-                showToast("Correct! Awesome job.", "success");
+                                animateCorrect();
+                                showToast("Correct! Awesome job.", "success");
                 currentQuestionIndex++;
                 
                 if (currentQuestionIndex >= currentQuestions.length) {
@@ -1744,7 +1894,8 @@
                 }
             } else {
                 // Instantly pop up the wrong reflection modal before deducting life
-                showWrongReflectionModal();
+                                animateWrong();
+                                showWrongReflectionModal();
             }
         }
 
@@ -1772,6 +1923,7 @@
             // Deduct life and shake the game screen to indicate a mistake
             lives--;
             updateLivesUI();
+            heartBreak();
             updateLiveScore();
             showWrongFeedback();
             
@@ -1788,7 +1940,8 @@
         }
 
         function winGame() {
-            badgeRecords[`level${currentLevel}`] = true;
+                        badgeRecords[`level${currentLevel}`] = true;
+            celebrateBig();
             const earned = currentAttemptMarks();
             scoreTotals[`level${currentLevel}`] += earned;
             saveScores();
